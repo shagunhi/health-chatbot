@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthSaathi - Health Tips</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        /* Navbar Styles */
+        nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Ticker Section */
+        .ticker-section {
+            background: white;
+            padding: 2rem 0;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .ticker-title {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            font-weight: bold;
+        }
+
+        .ticker-wrapper {
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+        }
+
+        .ticker-container {
+            display: flex;
+            gap: 1.5rem;
+            animation: scroll 30s linear infinite;
+        }
+
+        .ticker-container:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes scroll {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .ticker-box {
+            min-width: 250px;
+            height: 120px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s;
+            flex-shrink: 0;
+        }
+
+        .ticker-box:hover {
+            transform: scale(1.05);
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            max-width: 900px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .faq-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .faq-header h2 {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .faq-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .faq-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .faq-item {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: box-shadow 0.3s;
+        }
+
+        .faq-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .faq-question h3 {
+            flex: 1;
+            color: #333;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .faq-icon {
+            font-size: 1.5rem;
+            color: #667eea;
+            transition: transform 0.3s;
+            margin-left: 1rem;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            padding: 0 1.5rem;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding: 0 1.5rem 1.5rem 1.5rem;
+        }
+
+        .faq-answer p {
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .faq-answer ul {
+            margin-top: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .faq-answer li {
+            color: #555;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer */
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                flex-direction: column;
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .ticker-box {
+                min-width: 200px;
+                height: 100px;
+                font-size: 1rem;
+            }
+
+            .faq-header h2 {
+                font-size: 2rem;
+            }
+
+            .faq-question h3 {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">🏥 HealthSaathi</a>
+            <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="chatbot.html">Chatbot</a></li>
+                <li><a href="health-tips.html">Health Tips</a></li>
+                <li><a href="diseases.html">Diseases</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Ticker Section -->
+    <section class="ticker-section">
+        <h2 class="ticker-title">💡 Daily Health Tips</h2>
+        <div class="ticker-wrapper">
+            <div class="ticker-container" id="tickerContainer">
+                <!-- First set of boxes -->
+                <div class="ticker-box">Stay Hydrated - Drink 8 Glasses Daily</div>
+                <div class="ticker-box">Exercise 30 Minutes Daily</div>
+                <div class="ticker-box">Get 7-8 Hours of Sleep</div>
+                <div class="ticker-box">Eat 5 Servings of Fruits & Vegetables</div>
+                <div class="ticker-box">Practice Mindfulness & Meditation</div>
+                <div class="ticker-box">Limit Screen Time Before Bed</div>
+                <div class="ticker-box">Maintain Healthy Posture</div>
+                <div class="ticker-box">Regular Health Check-ups</div>
+                <!-- Duplicate set for seamless loop -->
+                <div class="ticker-box">Stay Hydrated - Drink 8 Glasses Daily</div>
+                <div class="ticker-box">Exercise 30 Minutes Daily</div>
+                <div class="ticker-box">Get 7-8 Hours of Sleep</div>
+                <div class="ticker-box">Eat 5 Servings of Fruits & Vegetables</div>
+                <div class="ticker-box">Practice Mindfulness & Meditation</div>
+                <div class="ticker-box">Limit Screen Time Before Bed</div>
+                <div class="ticker-box">Maintain Healthy Posture</div>
+                <div class="ticker-box">Regular Health Check-ups</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <div class="faq-header">
+            <h2>Common Health Questions</h2>
+            <p>Click on any question to reveal the answer</p>
+        </div>
+
+        <div class="faq-container">
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <h3>How much water should I drink daily?</h3>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>The general recommendation is to drink 8 glasses (about 2 liters) of water per day. However, individual needs vary based on:</p>
+                    <ul>
+                        <li>Body weight and size</li>
+                        <li>Physical activity level</li>
+                        <li>Climate and temperature</li>
+                        <li>Overall health condition</li>
+                    </ul>
+                    <p>Listen to your body and drink when you're thirsty. Your urine color is a good indicator - it should be light yellow.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <h3>What is a balanced diet?</h3>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>A balanced diet includes a variety of foods from all major food groups:</p>
+                    <ul>
+                        <li><strong>Fruits and Vegetables:</strong> 5 servings daily for vitamins and fiber</li>
+                        <li><strong>Whole Grains:</strong> Brown rice, whole wheat, oats for energy</li>
+                        <li><strong>Proteins:</strong> Lean meat, fish, eggs, legumes for muscle health</li>
+                        <li><strong>Dairy:</strong> Milk, yogurt, cheese for calcium and bone health</li>
+                        <li><strong>Healthy Fats:</strong> Nuts, seeds, olive oil in moderation</li>
+                    </ul>
+                    <p>Limit processed foods, sugar, and excessive salt intake.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <h3>How often should I exercise?</h3>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>The World Health Organization recommends:</p>
+                    <ul>
+                        <li><strong>Adults (18-64):</strong> At least 150 minutes of moderate-intensity aerobic activity per week</li>
+                        <li><strong>Or:</strong> 75 minutes of vigorous-intensity activity per week</li>
+                        <li><strong>Muscle-strengthening:</strong> Activities 2 or more days per week</li>
+                        <li><strong>Break it down:</strong> 30 minutes, 5 days a week is achievable</li>
+                    </ul>
+                    <p>Include activities like walking, jogging, swimming, cycling, or dancing.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <h3>Why is sleep important for health?</h3>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Quality sleep is crucial for overall health and wellbeing:</p>
+                    <ul>
+                        <li><strong>Physical Health:</strong> Repairs tissues, strengthens immune system</li>
+                        <li><strong>Mental Health:</strong> Improves mood, reduces stress and anxiety</li>
+                        <li><strong>Cognitive Function:</strong> Enhances memory, concentration, and decision-making</li>
+                        <li><strong>Weight Management:</strong> Regulates hunger hormones</li>
+                        <li><strong>Disease Prevention:</strong> Reduces risk of chronic conditions</li>
+                    </ul>
+                    <p>Aim for 7-9 hours of quality sleep each night for adults.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <h3>How can I boost my immune system?</h3>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Strengthen your immune system naturally with these habits:</p>
+                    <ul>
+                        <li><strong>Nutrition:</strong> Eat vitamin C-rich foods (citrus, berries) and zinc sources (nuts, seeds)</li>
+                        <li><strong>Exercise:</strong> Regular moderate exercise enhances immune function</li>
+                        <li><strong>Sleep:</strong> Get 7-9 hours to allow immune cell regeneration</li>
+                        <li><strong>Stress Management:</strong> Practice meditation, yoga, or deep breathing</li>
+                        <li><strong>Hygiene:</strong> Wash hands regularly, maintain cleanliness</li>
+                        <li><strong>Hydration:</strong> Drink plenty of water to flush toxins</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <h3>What are signs of dehydration?</h3>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Common signs of dehydration include:</p>
+                    <ul>
+                        <li>Dark yellow or amber-colored urine</li>
+                        <li>Feeling thirsty or dry mouth</li>
+                        <li>Fatigue and dizziness</li>
+                        <li>Headaches</li>
+                        <li>Dry skin and lips</li>
+                        <li>Decreased urination</li>
+                        <li>Rapid heartbeat</li>
+                    </ul>
+                    <p>If you experience severe symptoms like confusion or rapid breathing, seek medical attention immediately.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <h3>How can I reduce stress naturally?</h3>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Natural stress-relief techniques include:</p>
+                    <ul>
+                        <li><strong>Deep Breathing:</strong> Practice 4-7-8 breathing technique</li>
+                        <li><strong>Exercise:</strong> Physical activity releases endorphins</li>
+                        <li><strong>Meditation:</strong> 10-15 minutes daily mindfulness practice</li>
+                        <li><strong>Nature Time:</strong> Spend time outdoors in green spaces</li>
+                        <li><strong>Social Connection:</strong> Talk to friends and family</li>
+                        <li><strong>Hobbies:</strong> Engage in activities you enjoy</li>
+                        <li><strong>Limit Caffeine:</strong> Reduce coffee and energy drinks</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-question">
+                    <h3>What vitamins should I take daily?</h3>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Essential vitamins for daily health (best from food, supplements if needed):</p>
+                    <ul>
+                        <li><strong>Vitamin D:</strong> For bone health and immunity (sunlight, fatty fish)</li>
+                        <li><strong>Vitamin C:</strong> For immune support (citrus fruits, peppers)</li>
+                        <li><strong>B Vitamins:</strong> For energy production (whole grains, eggs)</li>
+                        <li><strong>Vitamin A:</strong> For eye health (carrots, sweet potatoes)</li>
+                        <li><strong>Vitamin E:</strong> For antioxidant protection (nuts, seeds)</li>
+                    </ul>
+                    <p>Consult a healthcare provider before starting any supplement regimen.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 HealthSaathi. Your Health Companion. All rights reserved.</p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Disclaimer: HealthSaathi provides general health information and is not a substitute for professional medical advice.</p>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+
+        function toggleFAQ(element) {
+            const isActive = element.classList.contains('active');
+            
+            // Close all FAQ items
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Open clicked item if it wasn't active
+            if (!isActive) {
+                element.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>

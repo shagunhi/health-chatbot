@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthSaathi - Diseases</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .epidemic-section {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .chart-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+        .disease-section {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .disease-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .disease-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            height: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .disease-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+
+        .disease-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .disease-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .disease-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .disease-card-body {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .disease-preview {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        .read-more {
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 1rem;
+            display: inline-block;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-section {
+            margin-bottom: 2rem;
+        }
+
+        .modal-section h4 {
+            color: #667eea;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-section p, .modal-section ul {
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .modal-section ul {
+            padding-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .modal-section li {
+            margin-bottom: 0.5rem;
+        }
+
+        .reference-links {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        .reference-links h4 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .reference-link {
+            display: block;
+            color: #667eea;
+            text-decoration: none;
+            padding: 0.5rem 0;
+            transition: color 0.3s;
+        }
+
+        .reference-link:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                flex-direction: column;
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .disease-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal.active {
+                padding: 1rem;
+            }
+
+            .modal-content {
+                max-height: 95vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">🏥 HealthSaathi</a>
+            <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="chatbot.html">Chatbot</a></li>
+                <li><a href="health-tips.html">Health Tips</a></li>
+                <li><a href="diseases.html">Diseases</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="page-header">
+        <h1>Disease Information Center</h1>
+        <p>Track epidemic data and learn about common diseases</p>
+    </section>
+
+    <section class="epidemic-section">
+        <h2 class="section-title">📊 Epidemic Data in India</h2>
+        
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">COVID-19 Cases by State (2020-2023)</h3>
+                <div class="chart-wrapper">
+                    <canvas id="covidChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 class="chart-title">Dengue Fever Cases (2019-2023)</h3>
+                <div class="chart-wrapper">
+                    <canvas id="dengueChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 class="chart-title">Influenza (Flu) Outbreak Trends</h3>
+                <div class="chart-wrapper">
+                    <canvas id="fluChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 class="chart-title">Tuberculosis Cases by Region</h3>
+                <div class="chart-wrapper">
+                    <canvas id="tbChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="disease-section">
+        <h2 class="section-title">🦠 Common Diseases</h2>
+        
+        <div class="disease-grid">
+            <div class="disease-card" onclick="openModal('covid19')">
+                <div class="disease-card-header">
+                    <div class="disease-icon">🦠</div>
+                    <h3>COVID-19</h3>
+                </div>
+                <div class="disease-card-body">
+                    <p class="disease-preview">A highly contagious respiratory illness caused by the SARS-CoV-2 virus. Symptoms include fever, cough, and difficulty breathing.</p>
+                    <span class="read-more">Click to learn more →</span>
+                </div>
+            </div>
+
+            <div class="disease-card" onclick="openModal('dengue')">
+                <div class="disease-card-header">
+                    <div class="disease-icon">🦟</div>
+                    <h3>Dengue Fever</h3>
+                </div>
+                <div class="disease-card-body">
+                    <p class="disease-preview">A mosquito-borne viral infection causing high fever, severe headache, and joint pain. Common in tropical regions during monsoon.</p>
+                    <span class="read-more">Click to learn more →</span>
+                </div>
+            </div>
+
+            <div class="disease-card" onclick="openModal('flu')">
+                <div class="disease-card-header">
+                    <div class="disease-icon">🤧</div>
+                    <h3>Influenza (Flu)</h3>
+                </div>
+                <div class="disease-card-body">
+                    <p class="disease-preview">A contagious respiratory illness caused by influenza viruses. Causes fever, cough, sore throat, and body aches.</p>
+                    <span class="read-more">Click to learn more →</span>
+                </div>
+            </div>
+
+            <div class="disease-card" onclick="openModal('tuberculosis')">
+                <div class="disease-card-header">
+                    <div class="disease-icon">🫁</div>
+                    <h3>Tuberculosis (TB)</h3>
+                </div>
+                <div class="disease-card-body">
+                    <p class="disease-preview">A bacterial infection that primarily affects the lungs. Spread through airborne droplets when infected individuals cough or sneeze.</p>
+                    <span class="read-more">Click to learn more →</span>
+                </div>
+            </div>
+
+            <div class="disease-card" onclick="openModal('malaria')">
+                <div class="disease-card-header">
+                    <div class="disease-icon">🦟</div>
+                    <h3>Malaria</h3>
+                </div>
+                <div class="disease-card-body">
+                    <p class="disease-preview">A life-threatening disease caused by parasites transmitted through infected mosquito bites. Common symptoms include fever and chills.</p>
+                    <span class="read-more">Click to learn more →</span>
+                </div>
+            </div>
+
+            <div class="disease-card" onclick="openModal('diabetes')">
+                <div class="disease-card-header">
+                    <div class="disease-icon">💉</div>
+                    <h3>Diabetes</h3>
+                </div>
+                <div class="disease-card-body">
+                    <p class="disease-preview">A chronic condition affecting how your body processes blood sugar. Can lead to serious complications if not managed properly.</p>
+                    <span class="read-more">Click to learn more →</span>
+                </div>
+            </div>
+
+            <div class="disease-card" onclick="openModal('typhoid')">
+                <div class="disease-card-header">
+                    <div class="disease-icon">🦠</div>
+                    <h3>Typhoid Fever</h3>
+                </div>
+                <div class="disease-card-body">
+                    <p class="disease-preview">A bacterial infection caused by Salmonella typhi. Spreads through contaminated food and water, causing high fever.</p>
+                    <span class="read-more">Click to learn more →</span>
+                </div>
+            </div>
+
+            <div class="disease-card" onclick="openModal('hepatitis')">
+                <div class="disease-card-header">
+                    <div class="disease-icon">🔴</div>
+                    <h3>Hepatitis</h3>
+                </div>
+                <div class="disease-card-body">
+                    <p class="disease-preview">Inflammation of the liver caused by viral infections. Types A, B, and C are most common, each with different transmission routes.</p>
+                    <span class="read-more">Click to learn more →</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="modal" id="diseaseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="modal-close" onclick="closeModal()">×</button>
+                <h2 class="modal-title" id="modalTitle"></h2>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 HealthSaathi. Your Health Companion. All rights reserved.</p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Disclaimer: HealthSaathi provides general health information and is not a substitute for professional medical advice.</p>
+    </footer>
+
+    <script>
+        const diseaseInfo = {
+            covid19: {
+                title: 'COVID-19', icon: '🦠',
+                overview: 'COVID-19 is a respiratory illness caused by the SARS-CoV-2 virus. It emerged in late 2019 and caused a global pandemic affecting millions worldwide.',
+                symptoms: ['Fever or chills', 'Cough and difficulty breathing', 'Fatigue and body aches', 'Loss of taste or smell', 'Sore throat', 'Headache'],
+                causes: 'Spread through respiratory droplets when an infected person coughs, sneezes, or talks. Can also spread by touching contaminated surfaces.',
+                prevention: ['Get vaccinated and boosted', 'Wear masks in crowded places', 'Practice social distancing', 'Wash hands frequently', 'Improve ventilation indoors', 'Stay home if you feel sick'],
+                treatment: 'Most cases can be managed at home with rest, fluids, and over-the-counter medications. Severe cases may require hospitalization and oxygen therapy.',
+                references: [
+                    { name: 'WHO - COVID-19 Information', url: 'https://www.who.int/emergencies/diseases/novel-coronavirus-2019' },
+                    { name: 'CDC - COVID-19 Guidelines', url: 'https://www.cdc.gov/coronavirus/2019-ncov/index.html' },
+                    { name: 'Ministry of Health India', url: 'https://www.mohfw.gov.in/' }
+                ]
+            },
+            dengue: {
+                title: 'Dengue Fever', icon: '🦟',
+                overview: 'Dengue is a mosquito-borne viral infection common in tropical and subtropical regions. In India, dengue outbreaks typically occur during and after monsoon season.',
+                symptoms: ['High fever (104°F/40°C)', 'Severe headache', 'Pain behind the eyes', 'Joint and muscle pain', 'Nausea and vomiting', 'Skin rash', 'Mild bleeding (nose, gums)'],
+                causes: 'Transmitted by Aedes aegypti and Aedes albopictus mosquitoes. These mosquitoes bite during daytime, especially early morning and evening.',
+                prevention: ['Use mosquito repellents', 'Wear long-sleeved clothing', 'Use mosquito nets while sleeping', 'Remove standing water around home', 'Keep water containers covered', 'Use mosquito screens on windows'],
+                treatment: 'No specific treatment exists. Management includes rest, fluids, and pain relievers like acetaminophen. Avoid aspirin and ibuprofen. Severe cases require hospitalization.',
+                references: [
+                    { name: 'WHO - Dengue Information', url: 'https://www.who.int/health-topics/dengue-and-severe-dengue' },
+                    { name: 'CDC - Dengue Prevention', url: 'https://www.cdc.gov/dengue/' },
+                    { name: 'National Vector Borne Disease Control Programme', url: 'https://nvbdcp.gov.in/' }
+                ]
+            },
+            flu: {
+                title: 'Influenza (Flu)', icon: '🤧',
+                overview: 'Influenza is a contagious respiratory illness caused by influenza viruses. Seasonal flu epidemics occur annually, especially during winter months in India.',
+                symptoms: ['Sudden onset fever', 'Cough and sore throat', 'Runny or stuffy nose', 'Body aches and fatigue', 'Headache', 'Sometimes vomiting and diarrhea'],
+                causes: 'Spread through respiratory droplets from coughs and sneezes. Can also spread by touching contaminated surfaces then touching face.',
+                prevention: ['Get annual flu vaccine', 'Wash hands frequently', 'Avoid close contact with sick people', 'Cover mouth when coughing', 'Stay home when sick', 'Boost immune system with healthy diet'],
+                treatment: 'Most people recover with rest and fluids. Antiviral medications may be prescribed for high-risk individuals. Symptom relief with over-the-counter medications.',
+                references: [
+                    { name: 'WHO - Influenza Information', url: 'https://www.who.int/health-topics/influenza-seasonal' },
+                    { name: 'CDC - Flu Information', url: 'https://www.cdc.gov/flu/' },
+                    { name: 'Indian Council of Medical Research', url: 'https://www.icmr.gov.in/' }
+                ]
+            },
+            tuberculosis: {
+                title: 'Tuberculosis (TB)', icon: '🫁',
+                overview: 'Tuberculosis is a serious bacterial infection that primarily affects the lungs. India has one of the highest TB burdens globally.',
+                symptoms: ['Persistent cough (3+ weeks)', 'Coughing up blood', 'Chest pain', 'Fatigue and weakness', 'Weight loss', 'Night sweats', 'Loss of appetite'],
+                causes: 'Caused by Mycobacterium tuberculosis bacteria. Spreads through air when infected person coughs, sneezes, or speaks.',
+                prevention: ['BCG vaccination in childhood', 'Avoid close contact with TB patients', 'Ensure good ventilation', 'Cover mouth when coughing', 'Complete full course if infected', 'Screen high-risk individuals regularly'],
+                treatment: 'Curable with 6-9 months of antibiotic treatment. Must complete entire course even if feeling better.',
+                references: [
+                    { name: 'WHO - Tuberculosis', url: 'https://www.who.int/health-topics/tuberculosis' },
+                    { name: 'CDC - TB Information', url: 'https://www.cdc.gov/tb/' },
+                    { name: 'National TB Elimination Programme', url: 'https://tbcindia.gov.in/' }
+                ]
+            },
+            malaria: {
+                title: 'Malaria', icon: '🦟',
+                overview: 'Malaria is a life-threatening disease caused by Plasmodium parasites transmitted through infected Anopheles mosquito bites.',
+                symptoms: ['High fever with chills', 'Sweating and headache', 'Nausea and vomiting', 'Fatigue and muscle pain', 'Diarrhea', 'Anemia', 'Jaundice'],
+                causes: 'Transmitted by female Anopheles mosquitoes carrying Plasmodium parasites. These mosquitoes typically bite between dusk and dawn.',
+                prevention: ['Use insecticide-treated bed nets', 'Apply mosquito repellent', 'Wear protective clothing', 'Use indoor residual spraying', 'Take antimalarial medications if traveling', 'Eliminate mosquito breeding sites'],
+                treatment: 'Treatable with antimalarial medications. Early diagnosis and treatment are crucial.',
+                references: [
+                    { name: 'WHO - Malaria Information', url: 'https://www.who.int/health-topics/malaria' },
+                    { name: 'CDC - Malaria Prevention', url: 'https://www.cdc.gov/malaria/' },
+                    { name: 'National Vector Borne Disease Control Programme', url: 'https://nvbdcp.gov.in/' }
+                ]
+            },
+            diabetes: {
+                title: 'Diabetes', icon: '💉',
+                overview: 'Diabetes is a chronic condition where the body cannot properly process blood sugar. India has the second-largest diabetes population globally.',
+                symptoms: ['Frequent urination', 'Excessive thirst', 'Unexplained weight loss', 'Increased hunger', 'Fatigue', 'Blurred vision', 'Slow-healing wounds'],
+                causes: 'Type 1: Immune system destroys insulin-producing cells. Type 2: Body becomes resistant to insulin. Risk factors include obesity and sedentary lifestyle.',
+                prevention: ['Maintain healthy weight', 'Exercise regularly (30 min daily)', 'Eat balanced diet, low in sugar', 'Limit processed foods', 'Regular health screenings', 'Manage stress', 'Get adequate sleep'],
+                treatment: 'Type 1 requires insulin therapy. Type 2 can be managed with lifestyle changes, oral medications, and sometimes insulin.',
+                references: [
+                    { name: 'WHO - Diabetes Information', url: 'https://www.who.int/health-topics/diabetes' },
+                    { name: 'American Diabetes Association', url: 'https://www.diabetes.org/' },
+                    { name: 'National Health Portal India', url: 'https://www.nhp.gov.in/disease/non-communicable-disease/diabetes' }
+                ]
+            },
+            typhoid: {
+                title: 'Typhoid Fever', icon: '🦠',
+                overview: 'Typhoid fever is a bacterial infection caused by Salmonella typhi, common in areas with poor sanitation.',
+                symptoms: ['Sustained high fever', 'Weakness and fatigue', 'Stomach pain', 'Headache', 'Loss of appetite', 'Constipation or diarrhea', 'Rose-colored spots on chest'],
+                causes: 'Spread through contaminated food and water. Poor hygiene facilitates transmission.',
+                prevention: ['Get typhoid vaccination', 'Drink only safe, boiled water', 'Eat thoroughly cooked food', 'Wash hands before eating', 'Avoid street food', 'Peel fruits before eating', 'Practice good hygiene'],
+                treatment: 'Treated with antibiotics. Important to complete full course.',
+                references: [
+                    { name: 'WHO - Typhoid Information', url: 'https://www.who.int/health-topics/typhoid' },
+                    { name: 'CDC - Typhoid Prevention', url: 'https://www.cdc.gov/typhoid-fever/' },
+                    { name: 'National Health Portal India', url: 'https://www.nhp.gov.in/disease/communicable-disease/typhoid' }
+                ]
+            },
+            hepatitis: {
+                title: 'Hepatitis', icon: '🔴',
+                overview: 'Hepatitis is inflammation of the liver, commonly caused by viral infections. Types A, B, C, D, and E exist with varying transmission routes.',
+                symptoms: ['Fatigue and weakness', 'Jaundice (yellowing of skin/eyes)', 'Abdominal pain', 'Loss of appetite', 'Nausea and vomiting', 'Dark urine', 'Joint pain'],
+                causes: 'Hepatitis A & E: Contaminated food/water. Hepatitis B, C & D: Blood contact, sexual transmission.',
+                prevention: ['Get vaccinated (Hep A & B)', 'Practice safe food handling', 'Drink clean water', 'Use protection during sex', 'Don\'t share needles or razors', 'Screen blood transfusions', 'Practice good hygiene'],
+                treatment: 'Treatment varies by type. Acute hepatitis often resolves on its own. Chronic hepatitis B & C require antiviral medications.',
+                references: [
+                    { name: 'WHO - Hepatitis Information', url: 'https://www.who.int/health-topics/hepatitis' },
+                    { name: 'CDC - Hepatitis Guide', url: 'https://www.cdc.gov/hepatitis/' },
+                    { name: 'Hepatitis India', url: 'https://www.nhp.gov.in/disease/digestive/liver/hepatitis' }
+                ]
+            }
+        };
+
+        function toggleMenu() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+
+        function openModal(diseaseId) {
+            const disease = diseaseInfo[diseaseId];
+            const modal = document.getElementById('diseaseModal');
+            
+            document.getElementById('modalTitle').innerHTML = `${disease.icon} ${disease.title}`;
+            document.getElementById('modalBody').innerHTML = `
+                <div class="modal-section">
+                    <h4>Overview</h4>
+                    <p>${disease.overview}</p>
+                </div>
+                <div class="modal-section">
+                    <h4>Symptoms</h4>
+                    <ul>${disease.symptoms.map(s => `<li>${s}</li>`).join('')}</ul>
+                </div>
+                <div class="modal-section">
+                    <h4>Causes & Transmission</h4>
+                    <p>${disease.causes}</p>
+                </div>
+                <div class="modal-section">
+                    <h4>Prevention</h4>
+                    <ul>${disease.prevention.map(p => `<li>${p}</li>`).join('')}</ul>
+                </div>
+                <div class="modal-section">
+                    <h4>Treatment</h4>
+                    <p>${disease.treatment}</p>
+                </div>
+                <div class="reference-links">
+                    <h4>📚 Reference Links</h4>
+                    ${disease.references.map(r => `<a href="${r.url}" target="_blank" class="reference-link">🔗 ${r.name}</a>`).join('')}
+                </div>
+            `;
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('diseaseModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        document.getElementById('diseaseModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        window.onload = function() {
+            new Chart(document.getElementById('covidChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Maharashtra', 'Kerala', 'Karnataka', 'Tamil Nadu', 'Delhi', 'UP'],
+                    datasets: [{
+                        label: 'Cases (Lakhs)',
+                        data: [81, 68, 40, 35, 20, 17],
+                        backgroundColor: ['rgba(102, 126, 234, 0.8)', 'rgba(118, 75, 162, 0.8)', 'rgba(237, 100, 166, 0.8)', 'rgba(255, 154, 158, 0.8)', 'rgba(250, 208, 196, 0.8)', 'rgba(155, 207, 248, 0.8)'],
+                        borderColor: ['rgba(102, 126, 234, 1)', 'rgba(118, 75, 162, 1)', 'rgba(237, 100, 166, 1)', 'rgba(255, 154, 158, 1)', 'rgba(250, 208, 196, 1)', 'rgba(155, 207, 248, 1)'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Cases (Lakhs)' } } }
+                }
+            });
+
+            new Chart(document.getElementById('dengueChart'), {
+                type: 'line',
+                data: {
+                    labels: ['2019', '2020', '2021', '2022', '2023'],
+                    datasets: [{
+                        label: 'Cases',
+                        data: [157220, 98811, 134534, 233251, 289235],
+                        borderColor: 'rgba(237, 100, 166, 1)',
+                        backgroundColor: 'rgba(237, 100, 166, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Total Cases' } } }
+                }
+            });
+
+            new Chart(document.getElementById('fluChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: '2022',
+                        data: [12000, 15000, 18000, 8000, 5000, 4000, 6000, 7000, 9000, 13000, 16000, 14000],
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4
+                    }, {
+                        label: '2023',
+                        data: [14000, 17000, 20000, 10000, 6000, 5000, 7000, 8000, 11000, 15000, 18000, 16000],
+                        borderColor: 'rgba(118, 75, 162, 1)',
+                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Cases' } } }
+                }
+            });
+
+            new Chart(document.getElementById('tbChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['North India', 'South India', 'East India', 'West India', 'Central India'],
+                    datasets: [{
+                        data: [28, 22, 20, 18, 12],
+                        backgroundColor: ['rgba(102, 126, 234, 0.8)', 'rgba(118, 75, 162, 0.8)', 'rgba(237, 100, 166, 0.8)', 'rgba(255, 154, 158, 0.8)', 'rgba(155, 207, 248, 0.8)'],
+                        borderColor: ['rgba(102, 126, 234, 1)', 'rgba(118, 75, 162, 1)', 'rgba(237, 100, 166, 1)', 'rgba(255, 154, 158, 1)', 'rgba(155, 207, 248, 1)'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        };
+    </script>
+</body>
+</html>

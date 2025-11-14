@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthSaathi - Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background: #f5f5f5;
+        }
+
+        /* Navbar Styles */
+        nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Main Chat Container */
+        .chat-container {
+            display: flex;
+            height: calc(100vh - 70px);
+            margin-top: 70px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
+            position: absolute;
+            z-index: 999;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: transform 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .chat-history-title {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+            padding: 0 0.5rem;
+            font-weight: 600;
+        }
+
+        .history-item {
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item:hover {
+            background: #f5f5f5;
+        }
+
+        .history-item.active {
+            background: #e8eaf6;
+        }
+
+        .history-text {
+            flex: 1;
+            font-size: 0.9rem;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-delete {
+            color: #999;
+            cursor: pointer;
+            padding: 0.2rem 0.5rem;
+        }
+
+        .history-delete:hover {
+            color: #f44336;
+        }
+
+        /* Main Chat Area */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f5f5f5;
+        }
+
+        .toggle-sidebar-btn {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-sidebar-btn:hover {
+            background: #f5f5f5;
+        }
+
+        /* Messages Area */
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            display: flex;
+            gap: 1rem;
+            max-width: 80%;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .bot-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .user-avatar {
+            background: #4caf50;
+            color: white;
+        }
+
+        .message-content {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message-text {
+            line-height: 1.5;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 0.5rem;
+        }
+
+        .message.user .message-time {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .welcome-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            max-width: 600px;
+        }
+
+        .chip {
+            padding: 0.8rem 1.5rem;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chip:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 1.5rem;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .input-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        #messageInput {
+            width: 100%;
+            min-height: 60px;
+            max-height: 150px;
+            padding: 1rem 3rem 1rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: none;
+            transition: border-color 0.3s;
+        }
+
+        #messageInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 0.5rem;
+            bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: transform 0.2s;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Loading indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 0.3rem;
+            padding: 1rem;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #999;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                flex-direction: column;
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 70px;
+                height: calc(100vh - 70px);
+                z-index: 999;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .welcome-title {
+                font-size: 1.5rem;
+            }
+
+            .suggestion-chips {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="home.html" class="logo">
+                <span>🏥</span>
+                <span>HealthSaathi</span>
+            </a>
+            <button class="mobile-menu-btn" onclick="toggleNavMenu()">☰</button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="chatbot.html">Chatbot</a></li>
+                <li><a href="health-tips.html">Health Tips</a></li>
+                <li><a href="diseases.html">Diseases</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Chat Container -->
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="new-chat-btn" onclick="createNewChat()">
+                    <span>➕</span>
+                    <span>New Chat</span>
+                </button>
+            </div>
+            <div class="chat-history">
+                <div class="chat-history-title">Chat History</div>
+                <div id="historyList"></div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-main">
+            <button class="toggle-sidebar-btn" onclick="toggleSidebar()">
+                ☰
+            </button>
+
+            <!-- Messages Area -->
+            <div class="messages-area" id="messagesArea">
+                <div class="welcome-screen" id="welcomeScreen">
+                    <div class="welcome-icon">🏥</div>
+                    <h1 class="welcome-title">Welcome to HealthSaathi</h1>
+                    <p class="welcome-subtitle">Your AI health assistant. Ask me anything about symptoms, diseases, or
+                        health concerns.</p>
+                    <div class="suggestion-chips">
+                        <div class="chip" onclick="sendSuggestion('What are the symptoms of diabetes?')">What are the
+                            symptoms of diabetes?</div>
+                        <div class="chip" onclick="sendSuggestion('How to prevent heart disease?')">How to prevent heart
+                            disease?</div>
+                        <div class="chip" onclick="sendSuggestion('I have fever and headache')">I have fever and
+                            headache</div>
+                        <div class="chip" onclick="sendSuggestion('Precautions for flu')">Precautions for flu</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <textarea id="messageInput" placeholder="Type your health question here..."
+                            onkeypress="handleKeyPress(event)"></textarea>
+                        <button class="send-btn" onclick="sendMessage()" id="sendBtn">
+                            ➤
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentChatId = null;
+        let chatHistory = [];
+        let currentMessages = [];
+
+        // Load chat history from storage
+        function loadChatHistory() {
+            const saved = localStorage.getItem('healthsaathi_chats');
+            if (saved) {
+                chatHistory = JSON.parse(saved);
+                renderChatHistory();
+            }
+        }
+
+        // Save chat history
+        function saveChatHistory() {
+            localStorage.setItem('healthsaathi_chats', JSON.stringify(chatHistory));
+        }
+
+        // Render chat history in sidebar
+        function renderChatHistory() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+
+            chatHistory.forEach((chat, index) => {
+                const item = document.createElement('div');
+                item.className = `history-item ${chat.id === currentChatId ? 'active' : ''}`;
+                item.innerHTML = `
+                    <div class="history-text" onclick="loadChat('${chat.id}')">${chat.title}</div>
+                    <span class="history-delete" onclick="deleteChat('${chat.id}', event)">🗑️</span>
+                `;
+                historyList.appendChild(item);
+            });
+        }
+
+        // Create new chat
+        function createNewChat() {
+            currentChatId = 'chat_' + Date.now();
+            currentMessages = [];
+            document.getElementById('messagesArea').innerHTML = `
+                <div class="welcome-screen">
+                    <div class="welcome-icon">🏥</div>
+                    <h1 class="welcome-title">New Chat Started</h1>
+                    <p class="welcome-subtitle">Ask me anything about your health concerns.</p>
+                </div>
+            `;
+            renderChatHistory();
+        }
+
+        // Load existing chat
+        function loadChat(chatId) {
+            const chat = chatHistory.find(c => c.id === chatId);
+            if (chat) {
+                currentChatId = chatId;
+                currentMessages = chat.messages;
+                renderMessages();
+                renderChatHistory();
+            }
+        }
+
+        // Delete chat
+        function deleteChat(chatId, event) {
+            event.stopPropagation();
+            chatHistory = chatHistory.filter(c => c.id !== chatId);
+            saveChatHistory();
+            if (currentChatId === chatId) {
+                createNewChat();
+            } else {
+                renderChatHistory();
+            }
+        }
+
+        // Render all messages
+        function renderMessages() {
+            const messagesArea = document.getElementById('messagesArea');
+            messagesArea.innerHTML = '';
+
+            currentMessages.forEach(msg => {
+                addMessageToDOM(msg.text, msg.isUser, msg.timestamp);
+            });
+
+            scrollToBottom();
+        }
+
+        // Add message to DOM
+        function addMessageToDOM(text, isUser, timestamp) {
+            const messagesArea = document.getElementById('messagesArea');
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            if (welcomeScreen) {
+                welcomeScreen.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+
+            const time = timestamp ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            messageDiv.innerHTML = `
+                <div class="message-avatar ${isUser ? 'user-avatar' : 'bot-avatar'}">
+                    ${isUser ? '👤' : '🏥'}
+                </div>
+                <div class="message-content">
+                    <div class="message-text">${text}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+
+            messagesArea.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            const messagesArea = document.getElementById('messagesArea');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="message-avatar bot-avatar">🏥</div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            messagesArea.appendChild(typingDiv);
+            scrollToBottom();
+        }
+
+        // Remove typing indicator
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Create new chat if needed
+            if (!currentChatId) {
+                currentChatId = 'chat_' + Date.now();
+                currentMessages = [];
+            }
+
+            // Add user message
+            const userMessage = {
+                text: message,
+                isUser: true,
+                timestamp: Date.now()
+            };
+            currentMessages.push(userMessage);
+            addMessageToDOM(message, true);
+
+            input.value = '';
+            input.style.height = 'auto';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Simulate API call to your ML model
+            // Replace this with actual API call to your backend
+            setTimeout(() => {
+                removeTypingIndicator();
+                const botResponse = getBotResponse(message);
+                const botMessage = {
+                    text: botResponse,
+                    isUser: false,
+                    timestamp: Date.now()
+                };
+                currentMessages.push(botMessage);
+                addMessageToDOM(botResponse, false);
+
+                // Save to history
+                saveCurrentChat(message);
+            }, 1500);
+        }
+
+        // Get bot response (replace with actual API call)
+        function getBotResponse(userMessage) {
+            const diseases = [
+                {
+                    name: "Fever",
+                    symptoms: ["fever", "chills", "body ache", "temperature", "sweating"],
+                    description: "Fever is a temporary rise in body temperature, often due to infections or inflammation.",
+                    precautions: "Stay hydrated, rest, take paracetamol if needed, wear light clothes, and monitor temperature."
+                },
+                {
+                    name: "Common Cold",
+                    symptoms: ["sneeze", "runny nose", "cold", "blocked nose", "cough", "sore throat"],
+                    description: "Common cold is a viral infection affecting the nose and throat.",
+                    precautions: "Drink warm fluids, rest, use saline drops, maintain hygiene, and avoid cold exposure."
+                },
+                {
+                    name: "Flu (Influenza)",
+                    symptoms: ["fever", "fatigue", "cough", "body pain", "chills", "headache"],
+                    description: "Flu is a viral respiratory infection caused by influenza viruses.",
+                    precautions: "Get vaccinated annually, rest, stay hydrated, avoid contact with others."
+                },
+                {
+                    name: "Dengue",
+                    symptoms: ["high fever", "joint pain", "rash", "vomiting", "pain behind eyes"],
+                    description: "Dengue is a mosquito-borne viral infection causing severe fever and body pain.",
+                    precautions: "Avoid mosquito bites, use repellents, stay hydrated, seek medical help for bleeding or pain."
+                },
+                {
+                    name: "Malaria",
+                    symptoms: ["fever", "chills", "sweating", "headache", "nausea"],
+                    description: "Malaria is caused by Plasmodium parasites transmitted by mosquito bites.",
+                    precautions: "Sleep under nets, avoid mosquito exposure, and seek medical care if fever recurs."
+                },
+                {
+                    name: "Typhoid",
+                    symptoms: ["fever", "stomach pain", "headache", "diarrhea", "constipation"],
+                    description: "Typhoid fever is caused by Salmonella bacteria spread through contaminated food or water.",
+                    precautions: "Drink boiled water, eat cooked food, wash hands, and take prescribed antibiotics."
+                },
+                {
+                    name: "High Blood Pressure",
+                    symptoms: ["headache", "nosebleed", "fatigue", "blurred vision"],
+                    description: "Hypertension occurs when blood pressure in the arteries is persistently elevated.",
+                    precautions: "Eat less salt, exercise daily, manage stress, avoid alcohol and smoking."
+                },
+                {
+                    name: "Low Blood Pressure",
+                    symptoms: ["dizziness", "weakness", "fainting", "blurry vision"],
+                    description: "Low blood pressure can cause dizziness and fainting, usually due to dehydration or heart issues.",
+                    precautions: "Stay hydrated, increase salt intake (if allowed), avoid standing suddenly."
+                },
+                {
+                    name: "Asthma",
+                    symptoms: ["wheezing", "shortness of breath", "chest tightness", "cough"],
+                    description: "Asthma is a chronic lung disease that causes inflammation and narrowing of airways.",
+                    precautions: "Avoid allergens, dust, and smoke; use prescribed inhalers regularly."
+                },
+                {
+                    name: "Migraine",
+                    symptoms: ["headache", "nausea", "light sensitivity", "aura", "vomiting"],
+                    description: "Migraine is a neurological condition causing severe, throbbing headaches.",
+                    precautions: "Avoid triggers like stress, dehydration, and loud noise. Rest in a dark quiet room."
+                },
+                {
+                    name: "Anemia",
+                    symptoms: ["fatigue", "pale skin", "dizziness", "weakness", "breathlessness"],
+                    description: "Anemia is a condition where your body lacks enough red blood cells to carry oxygen.",
+                    precautions: "Eat iron-rich foods (spinach, lentils, red meat), take supplements if advised."
+                },
+                {
+                    name: "COVID-19",
+                    symptoms: ["fever", "cough", "breathlessness", "sore throat", "loss of smell", "fatigue"],
+                    description: "COVID-19 is a contagious respiratory illness caused by SARS-CoV-2 virus.",
+                    precautions: "Wear masks, sanitize hands, isolate if sick, and get vaccinated."
+                },
+                {
+                    name: "Depression",
+                    symptoms: ["sadness", "loss of interest", "sleep issues", "fatigue", "hopelessness"],
+                    description: "Depression is a mental health disorder characterized by persistent sadness and loss of interest.",
+                    precautions: "Talk to someone you trust, practice mindfulness, seek professional help."
+                }
+            ];
+
+            const msg = userMessage.toLowerCase();
+
+            // 🩺 Detect possible diseases based on symptoms
+            let matched = diseases.filter(disease =>
+                disease.symptoms.some(symptom => msg.includes(symptom))
+            );
+
+            if (matched.length > 0) {
+                let topMatch = matched[0];
+                return `
+Possible Disease: ${topMatch.name}  
+Description: ${topMatch.description}  
+Symptoms noticed: ${topMatch.symptoms.slice(0, 5).join(", ")}  
+Precautions: ${topMatch.precautions}  
+Always consult a doctor for accurate diagnosis.`;
+            }
+
+
+            // If no match found
+            return `
+🤖 I couldn’t identify your condition clearly.  
+Please describe your symptoms (e.g. "I have fever and joint pain")  
+and I’ll suggest possible diseases with precautions.`;
+        }
+
+        // Save current chat
+        function saveCurrentChat(firstMessage) {
+            let chat = chatHistory.find(c => c.id === currentChatId);
+
+            if (!chat) {
+                chat = {
+                    id: currentChatId,
+                    title: firstMessage.substring(0, 30) + (firstMessage.length > 30 ? '...' : ''),
+                    messages: currentMessages,
+                    timestamp: Date.now()
+                };
+                chatHistory.unshift(chat);
+            } else {
+                chat.messages = currentMessages;
+            }
+
+            saveChatHistory();
+            renderChatHistory();
+        }
+
+        // Send suggestion
+        function sendSuggestion(text) {
+            document.getElementById('messageInput').value = text;
+            sendMessage();
+        }
+
+        // Handle Enter key
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        }
+
+        // Toggle nav menu
+        function toggleNavMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+
+        // Scroll to bottom
+        function scrollToBottom() {
+            const messagesArea = document.getElementById('messagesArea');
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        // Auto-resize textarea
+        document.getElementById('messageInput').addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+        });
+
+        // Initialize
+        loadChatHistory();
+    </script>
+</body>
+
+</html>
